@@ -1,6 +1,7 @@
-import { Controller, Get } from "@nestjs/common";
+import { Controller, Get, Req } from "@nestjs/common";
 import { PrivateService } from "./private.service";
 import { ApiHeaders } from "@nestjs/swagger";
+import { Request } from "express";
 
 @ApiHeaders([
     {
@@ -17,7 +18,15 @@ export class PrivateController {
     constructor(private readonly privateService: PrivateService) {}
 
     @Get("/test")
-    getTest() {
-        return this.privateService.getTest();
+    getTest(@Req() request: Request) {
+        const accessTimeData = request["accessTime"];
+
+        return {
+            message: this.privateService.getTest(),
+            address: accessTimeData.signerAddress,
+            expiryTimestamp: accessTimeData.accessTimeExpiry,
+            remainingTime: accessTimeData.remainingTime,
+            expiresAt: new Date(accessTimeData.accessTimeExpiry * 1000).toISOString()
+        };
     }
 }
